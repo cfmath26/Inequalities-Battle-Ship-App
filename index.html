@@ -3,751 +3,356 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Battleship: Accelerated Algebra 1 (49 Problems)</title>
-
-  <!-- MathJax for rendering LaTeX math formulas -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+  <title>Divisibility Battleship (1000+ Problem Engine)</title>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --secondary: #0284c7;
-      --hit: #ef4444;
-      --miss: #94a3b8;
-      --water: #e0f2fe;
-      --dark: #0f172a;
+      --bg-color: #0d1b2a;
+      --panel-bg: #1b263b;
+      --accent-blue: #415a77;
+      --highlight: #00b4d8;
+      --text-color: #e0e1dd;
+      --hit-color: #e63946;
+      --miss-color: #457b9d;
+      --water-color: #1d3557;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8fafc;
-      color: var(--dark);
+      background-color: var(--bg-color);
+      color: var(--text-color);
       margin: 0;
       padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     h1 {
-      color: var(--primary);
-      margin-bottom: 5px;
-      text-align: center;
+      margin: 0 0 5px 0;
+      color: var(--highlight);
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
     p.subtitle {
-      color: #64748b;
-      margin-top: 0;
-      margin-bottom: 20px;
-      text-align: center;
+      margin: 0 0 20px 0;
+      color: #778da9;
     }
 
-    .app-layout {
+    .controls {
+      background: var(--panel-bg);
+      padding: 12px 20px;
+      border-radius: 8px;
       display: flex;
-      flex-direction: column;
-      gap: 25px;
-      max-width: 1000px;
-      width: 100%;
+      gap: 15px;
       align-items: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    select, button {
+      background: var(--accent-blue);
+      color: var(--text-color);
+      border: 1px solid var(--highlight);
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--highlight);
+      color: #000;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #555;
     }
 
     .game-container {
       display: flex;
+      gap: 30px;
       flex-wrap: wrap;
-      gap: 25px;
       justify-content: center;
+      max-width: 1100px;
       width: 100%;
-      align-items: flex-start;
     }
 
-    .board-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .grid-panel {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 
-    .board {
+    .grid {
       display: grid;
-      grid-template-columns: 30px repeat(7, 50px);
-      grid-template-rows: 30px repeat(7, 50px);
+      grid-template-columns: 40px repeat(6, 60px);
+      grid-template-rows: 40px repeat(6, 60px);
       gap: 4px;
-      background-color: #cbd5e1;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     .cell {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
+      background-color: var(--water-color);
       border-radius: 4px;
-    }
-
-    .header-cell {
-      background-color: transparent;
-      color: #475569;
-    }
-
-    .grid-cell {
-      background-color: var(--water);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 13px;
+      font-weight: bold;
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 1.2rem;
+      user-select: none;
+      transition: transform 0.1s, background-color 0.2s;
     }
 
-    .grid-cell:hover:not(.hit):not(.miss) {
-      background-color: #bae6fd;
+    .cell:hover:not(.header):not(.hit):not(.miss) {
       transform: scale(1.05);
+      border: 2px solid var(--highlight);
     }
 
-    .grid-cell.hit {
-      background-color: var(--hit);
-      color: white;
-      cursor: not-allowed;
+    .cell.header {
+      background-color: transparent;
+      color: #778da9;
+      cursor: default;
     }
 
-    .grid-cell.miss {
-      background-color: var(--miss);
-      color: white;
-      cursor: not-allowed;
+    .cell.hit {
+      background-color: var(--hit-color);
+      cursor: default;
     }
 
-    /* Question Panel on the Right Side */
+    .cell.miss {
+      background-color: var(--miss-color);
+      cursor: default;
+    }
+
     .info-panel {
-      flex: 1;
-      min-width: 320px;
-      max-width: 500px;
-      background: white;
+      background: var(--panel-bg);
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      width: 340px;
       display: flex;
       flex-direction: column;
       gap: 15px;
-    }
-
-    /* Directions Box Below App */
-    .directions-bottom {
-      width: 100%;
-      box-sizing: border-box;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      border-top: 4px solid var(--secondary);
-      max-height: 250px;
-      overflow-y: auto;
-    }
-
-    .directions-bottom h2 {
-      color: var(--primary);
-      margin-top: 0;
-      font-size: 1.25rem;
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 8px;
-    }
-
-    .directions-bottom h3 {
-      color: var(--secondary);
-      font-size: 1rem;
-      margin-top: 15px;
-      margin-bottom: 5px;
-    }
-
-    .directions-bottom ul {
-      padding-left: 20px;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .directions-bottom p {
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: #334155;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 
     .stats {
       display: flex;
-      justify-content: space-between;
-      background: #f1f5f9;
-      padding: 10px 15px;
+      justify-content: space-around;
+      background: var(--bg-color);
+      padding: 10px;
       border-radius: 6px;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 20px;
       font-weight: bold;
+      color: var(--highlight);
     }
 
-    .question-card {
-      border: 2px solid var(--secondary);
-      border-radius: 8px;
-      padding: 15px;
-      background-color: #f0f9ff;
+    .stat-lbl {
+      font-size: 11px;
+      color: #778da9;
     }
 
-    .question-card h3 {
-      margin-top: 0;
-      color: var(--primary);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      font-size: 0.75rem;
-      border-radius: 4px;
-      color: white;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-    .badge-std { background-color: #0284c7; }
-    .badge-amc { background-color: #b91c1c; }
-
-    .options-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .btn-option {
-      background-color: white;
-      border: 1px solid var(--secondary);
-      color: var(--primary);
-      padding: 12px;
+    .log-box {
+      flex: 1;
+      background: var(--bg-color);
       border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      text-align: left;
-      transition: background 0.2s;
+      padding: 10px;
+      height: 250px;
+      overflow-y: auto;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .btn-option:hover {
-      background-color: var(--secondary);
-      color: white;
+    .log-entry {
+      border-left: 3px solid var(--highlight);
+      padding-left: 6px;
+    }
+
+    .log-entry.hit { border-color: var(--hit-color); }
+    .log-entry.miss { border-color: var(--miss-color); }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal {
+      background: var(--panel-bg);
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 480px;
+      width: 90%;
+      border: 2px solid var(--highlight);
+      box-shadow: 0 0 20px rgba(0, 180, 216, 0.3);
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      color: var(--highlight);
+    }
+
+    .problem-text {
+      font-size: 16px;
+      line-height: 1.4;
+      margin-bottom: 15px;
+    }
+
+    .answer-input {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-color);
+      border: 1px solid var(--accent-blue);
+      color: #fff;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-bottom: 15px;
     }
 
     .feedback {
-      padding: 12px;
-      border-radius: 6px;
+      margin-top: 10px;
       font-weight: bold;
-      display: none;
-      line-height: 1.4;
+      font-size: 14px;
     }
 
-    .feedback.correct {
-      background-color: #dcfce7;
-      color: #15803d;
-      display: block;
-    }
-
-    .feedback.incorrect {
-      background-color: #fee2e2;
-      color: #b91c1c;
-      display: block;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    .feedback.error { color: var(--hit-color); }
+    .feedback.success { color: #2a9d8f; }
   </style>
 </head>
 <body>
 
-  <h1>Math Battleship: Accelerated Algebra 1</h1>
-  <p class="subtitle">Target coordinates, solve inequalities, and sink enemy ships!</p>
+  <h1>Divisibility Battleship</h1>
+  <p class="subtitle">AoPS Prealgebra & AMC 8 Engine (1,000+ Algorithmic Problems)</p>
 
-  <div class="app-layout">
-    <!-- Top Area: Game Board (Left) & Question Area (Right) -->
-    <div class="game-container">
-      <div class="board-container">
-        <div id="board" class="board"></div>
-      </div>
+  <div class="controls">
+    <label for="difficulty">Level:</label>
+    <select id="difficulty" onchange="resetGame()">
+      <option value="basic">Basic (Larson / Big Ideas)</option>
+      <option value="advanced">Advanced (AoPS Prealgebra)</option>
+      <option value="amc8" selected>Master (AMC 8)</option>
+    </select>
 
-      <!-- Problem / Info Panel on the Right -->
-      <div class="info-panel">
-        <div class="stats">
-          <span>Hits: <span id="hits-count">0</span> / 8</span>
-          <span>Accuracy: <span id="accuracy">100%</span></span>
-        </div>
+    <button onclick="resetGame()">Refresh Board</button>
+    <button id="sonarBtn" onclick="useSonar()">Sonar Radar</button>
+  </div>
 
-        <div id="instruction-prompt">
-          <h3>Radar Active</h3>
-          <p>Click any coordinate on the 7x7 grid to fire a torpedo.</p>
-        </div>
-
-        <div id="question-card" class="question-card hidden">
-          <h3 id="target-coord">Targeting Coordinate...</h3>
-          <p id="question-text"></p>
-          <div id="options" class="options-grid"></div>
-        </div>
-
-        <div id="feedback" class="feedback"></div>
-      </div>
+  <div class="game-container">
+    <div class="grid-panel">
+      <div id="grid" class="grid"></div>
     </div>
 
-    <!-- Bottom Area: Scrolling Directions Box -->
-    <div class="directions-bottom">
-      <h2>📖 Student Guide & Directions</h2>
-      <p>Welcome! Use your knowledge of linear inequalities, absolute value, interval notation, and logic bounds to locate and sink all hidden enemy ships.</p>
+    <div class="info-panel">
+      <div class="stats">
+        <div class="stat-box">
+          <div id="hitCount" class="stat-val">0</div>
+          <div class="stat-lbl">Hits</div>
+        </div>
+        <div class="stat-box">
+          <div id="missCount" class="stat-val">0</div>
+          <div class="stat-lbl">Misses</div>
+        </div>
+        <div class="stat-box">
+          <div id="sonarCount" class="stat-val">1</div>
+          <div class="stat-lbl">Sonar Left</div>
+        </div>
+      </div>
 
-      <h3>📋 How to Play</h3>
-      <ul>
-        <li><b>1. Select Target:</b> Click any cell (A1–G7) on the $7 \times 7$ grid on the left to launch a torpedo.</li>
-        <li><b>2. Solve the Problem:</b> The inequality or word problem for that coordinate will appear on the right side.</li>
-        <li><b>3. Evaluate Shot:</b>
-          <ul>
-            <li>💥 <b>HIT:</b> Correct math calculation and an enemy ship segment is hit!</li>
-            <li>🌊 <b>MISS:</b> Correct math calculation, but the shot landed in open water.</li>
-            <li>⚠️ <b>MISFIRE:</b> Incorrect answer. Read the step-by-step solution to learn!</li>
-          </ul>
-        </li>
-        <li><b>4. Victory:</b> Sink all 3 enemy vessels (8 hits total) to win.</li>
-      </ul>
+      <div style="font-weight:bold; font-size:14px;">Battle Log</div>
+      <div id="log" class="log-box"></div>
+    </div>
+  </div>
 
-      <h3>💡 Review Tips</h3>
-      <ul>
-        <li>📝 <b>Scratch Paper:</b> Keep paper handy for multi-step boundary problems.</li>
-        <li>⚠️ <b>Sign Flips:</b> Remember to flip inequality signs when multiplying or dividing by a <b>negative number</b>.</li>
-        <li>🔍 <b>Intervals:</b> Use <code>( )</code> for strict ($<, >$) and <code>[ ]</code> for inclusive ($\le, \ge$).</li>
-        <li>🔗 <b>Compound Logic:</b> <code>AND</code> needs overlap (intersection); <code>OR</code> combines sets (union).</li>
-      </ul>
-
-      <h3>🏷️ Difficulty Badges</h3>
-      <ul>
-        <li><span class="badge badge-std">Accelerated</span> Core curriculum inequalities.</li>
-        <li><span class="badge badge-amc">AMC Challenge</span> Contest-level problem solving.</li>
-      </ul>
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+      <h3 id="modalTitle">Fire Torpedo</h3>
+      <div id="problemText" class="problem-text"></div>
+      <input type="number" id="answerInput" class="answer-input" placeholder="Enter integer answer..." />
+      <button onclick="submitAnswer()">Launch Missile</button>
+      <div id="modalFeedback" class="feedback"></div>
     </div>
   </div>
 
   <script>
-    const BOARD_SIZE = 7;
-    let grid = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
-    let pendingTarget = null;
-    let totalShots = 0;
-    let successfulHits = 0;
+    const GRID_SIZE = 6;
+    let board = [];
+    let hits = 0;
+    let misses = 0;
+    let sonarLeft = 1;
+    let activeCell = null;
 
-    const ships = [
-      { name: "Patrol Boat", size: 2 },
-      { name: "Destroyer", size: 3 },
-      { name: "Battleship", size: 3 }
-    ];
+    const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-    // Bank of 49 Unique Problems mapping to the 7x7 grid
-    const problems = [
-      // ROW 1
-      {
-        q: "Simplify and express in interval notation: \\( x > 3 \\text{ AND } x \\ge 5 \\)",
-        tag: "Accelerated",
-        options: ["\\( [5, \\infty) \\)", "\\( (3, \\infty) \\)", "\\( (3, 5] \\)", "\\( [3, 5) \\)"],
-        correctIndex: 0,
-        exp: "Since both must be true simultaneously (intersection), any value that is \\(\\ge 5\\) is automatically \\(> 3\\). Solution is \\(x \\ge 5\\) or \\([5, \\infty)\\)."
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x < 10 \\text{ AND } x \\le 4 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, 4] \\)", "\\( (-\\infty, 10) \\)", "\\( [4, 10) \\)", "\\( (4, 10) \\)"],
-        correctIndex: 0,
-        exp: "The intersection of \\(x < 10\\) and \\(x \\le 4\\) is the stricter requirement: \\(x \\le 4\\) or \\((-\\infty, 4]\\)."
-      },
-      {
-        q: "Solve compound AND with linear terms: \\( x - 3 \\le 2x + 1 < x + 5 \\)",
-        tag: "Accelerated",
-        options: ["\\( [-4, 4) \\)", "\\( (-4, 4] \\)", "\\( [-4, 5) \\)", "\\( (-3, 4) \\)"],
-        correctIndex: 0,
-        exp: "1) \\(x - 3 \\le 2x + 1 \\rightarrow -4 \\le x\\).<br>2) \\(2x + 1 < x + 5 \\rightarrow x < 4\\).<br>Combined: \\([-4, 4)\\)."
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x \\ge -2 \\text{ AND } x > -6 \\)",
-        tag: "Accelerated",
-        options: ["\\( [-2, \\infty) \\)", "\\( (-6, \\infty) \\)", "\\( (-6, -2] \\)", "\\( [-6, -2] \\)"],
-        correctIndex: 0,
-        exp: "The overlap of \\(x \\ge -2\\) and \\(x > -6\\) is \\(x \\ge -2\\) or \\([-2, \\infty)\\)."
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x < -3 \\text{ AND } x > 4 \\)",
-        tag: "Standard",
-        options: ["No Solution (\\(\\emptyset\\))", "\\( (-\\infty, -3) \\cup (4, \\infty) \\)", "\\( (-3, 4) \\)", "\\( (-\\infty, \\infty) \\)"],
-        correctIndex: 0,
-        exp: "No number can be simultaneously less than -3 AND greater than 4! Solution is No Solution."
-      },
-      {
-        q: "Solve: \\( |2x - 8| < -4 \\)",
-        tag: "Standard",
-        options: ["No Solution (\\(\\emptyset\\))", "\\( x < 2 \\)", "\\( 2 < x < 6 \\)", "\\( (-\\infty, \\infty) \\)"],
-        correctIndex: 0,
-        exp: "Absolute value measures distance, which is never negative! Hence, No Solution."
-      },
-      {
-        q: "Given \\(a < 0\\), solve for \\(x\\): \\( ax + 5 < b \\)",
-        tag: "Accelerated",
-        options: ["\\( x > \\frac{b - 5}{a} \\)", "\\( x < \\frac{b - 5}{a} \\)", "\\( x > \\frac{b + 5}{a} \\)", "\\( x < \\frac{b + 5}{a} \\)"],
-        correctIndex: 0,
-        exp: "Subtract 5: \\(ax < b - 5\\). Since \\(a < 0\\), dividing by \\(a\\) flips the inequality sign: \\(x > \\frac{b - 5}{a}\\)."
-      },
+    function resetGame() {
+      hits = 0;
+      misses = 0;
+      sonarLeft = 1;
+      document.getElementById('hitCount').innerText = hits;
+      document.getElementById('missCount').innerText = misses;
+      document.getElementById('sonarCount').innerText = sonarLeft;
+      document.getElementById('log').innerHTML = '';
 
-      // ROW 2
-      {
-        q: "Solve for \\(x\\): \\( 5(x - 2) \\ge 8x + 11 \\)",
-        tag: "Standard",
-        options: ["\\( x \\le -7 \\)", "\\( x \\ge -7 \\)", "\\( x \\le 7 \\)", "\\( x \\ge 7 \\)"],
-        correctIndex: 0,
-        exp: "Expand: \\(5x - 10 \\ge 8x + 11 \\rightarrow -3x \\ge 21 \\rightarrow x \\le -7\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> How many integer solutions exist for \\( ||x - 3| - 4| \\le 2 \\)?",
-        tag: "AMC Challenge",
-        options: ["10", "8", "6", "12"],
-        correctIndex: 0,
-        exp: "\\(-2 \\le |x - 3| - 4 \\le 2 \\rightarrow 2 \\le |x - 3| \\le 6\\).<br>Yields \\([-3, 1]\\) (5 integers) and \\([5, 9]\\) (5 integers). Total = 10 integers!"
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x \\le 1 \\text{ OR } x < 7 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, 7) \\)", "\\( (-\\infty, 1] \\)", "\\( [1, 7) \\)", "\\( (-\\infty, \\infty) \\)"],
-        correctIndex: 0,
-        exp: "For OR (union), all numbers less than 7 cover all numbers less than or equal to 1. Result: \\((-\\infty, 7)\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> A triangle has side lengths 6, 11, and \\(x\\). Express all possible integer lengths for \\(x\\) in interval notation.",
-        tag: "AMC Challenge",
-        options: ["\\( (5, 17) \\)", "\\( [5, 17] \\)", "\\( (6, 11) \\)", "\\( (0, 17) \\)"],
-        correctIndex: 0,
-        exp: "Triangle Inequality Theorem: \\(11 - 6 < x < 11 + 6 \\rightarrow 5 < x < 17\\).<br>In interval notation: \\((5, 17)\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> How many integers \\(n\\) satisfy the compound inequality \\( -2 < \\frac{n}{3} < \\frac{5}{3} \\)?",
-        tag: "AMC Challenge",
-        options: ["10", "11", "9", "8"],
-        correctIndex: 0,
-        exp: "Multiply by 3: \\(-6 < n < 5\\).<br>Integers strictly between \\(-6\\) and \\(5\\): \\(-5, -4, -3, -2, -1, 0, 1, 2, 3, 4\\). Total = 10 integers."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> How many integers \\(x\\) satisfy BOTH \\( |x - 2| < 5 \\) AND \\( |x + 1| \\ge 3 \\)?",
-        tag: "AMC Challenge",
-        options: ["5", "4", "6", "3"],
-        correctIndex: 0,
-        exp: "Inequality 1: \\(-3 < x < 7\\) (Integers: -2 to 6).<br>Inequality 2: \\(x \\ge 2\\) OR \\(x \\le -4\\).<br>Valid overlap integers: \\(2, 3, 4, 5, 6\\). Total = 5 integers!"
-      },
-      {
-        q: "Convert interval \\( [-4, 10] \\) into absolute value notation \\( |x - h| \\le k \\).",
-        tag: "Accelerated",
-        options: ["\\( |x - 3| \\le 7 \\)", "\\( |x + 3| \\le 7 \\)", "\\( |x - 7| \\le 3 \\)", "\\( |x - 3| \\le 10 \\)"],
-        correctIndex: 0,
-        exp: "Midpoint \\(h = \\frac{-4 + 10}{2} = 3\\). Half-width \\(k = \\frac{10 - (-4)}{2} = 7\\). Thus \\(|x - 3| \\le 7\\)."
-      },
-
-      // ROW 3
-      {
-        q: "Simplify and express in interval notation: \\( x > 1 \\text{ OR } x < 5 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, \\infty) \\)", "\\( (1, 5) \\)", "\\( [1, 5] \\)", "No Solution"],
-        correctIndex: 0,
-        exp: "Every real number is either greater than 1 OR less than 5. Union covers the entire number line: \\((-\\infty, \\infty)\\)."
-      },
-      {
-        q: "Solve compound AND with linear terms on all 3 sides: \\( 2x + 1 < 3x - 2 < 2x + 8 \\)",
-        tag: "Accelerated",
-        options: ["\\( (3, 10) \\)", "\\( [3, 10] \\)", "\\( (3, 8) \\)", "\\( (2, 10) \\)"],
-        correctIndex: 0,
-        exp: "1) \\(2x + 1 < 3x - 2 \\rightarrow 3 < x\\).<br>2) \\(3x - 2 < 2x + 8 \\rightarrow x < 10\\).<br>Solution: \\((3, 10)\\)."
-      },
-      {
-        q: "Express in interval notation: \\( x > 4 \\text{ AND } x \\le 12 \\)",
-        tag: "Standard",
-        options: ["\\( (4, 12] \\)", "\\( [4, 12) \\)", "\\( (4, 12) \\)", "\\( [4, 12] \\)"],
-        correctIndex: 0,
-        exp: "Strictly greater than 4 uses \\((\\), less than or equal to 12 uses \\(]\\): \\((4, 12]\\)."
-      },
-      {
-        q: "Solve: \\( -2(x - 3) + 4 < 10 \\)",
-        tag: "Standard",
-        options: ["\\( x > 0 \\)", "\\( x < 0 \\)", "\\( x > 3 \\)", "\\( x < -3 \\)"],
-        correctIndex: 0,
-        exp: "Expand: \\(-2x + 6 + 4 < 10 \\rightarrow -2x + 10 < 10 \\rightarrow -2x < 0 \\rightarrow x > 0\\)."
-      },
-      {
-        q: "Solve compound AND: \\( 3x - 5 \\ge 1 \\text{ AND } 2x + 4 < 16 \\)",
-        tag: "Standard",
-        options: ["\\( [2, 6) \\)", "\\( (2, 6] \\)", "\\( [2, 6] \\)", "\\( (2, 6) \\)"],
-        correctIndex: 0,
-        exp: "1) \\(3x \\ge 6 \\rightarrow x \\ge 2\\).<br>2) \\(2x < 12 \\rightarrow x < 6\\).<br>Combined: \\([2, 6)\\)."
-      },
-      {
-        q: "Express solution in interval notation: \\( |4x - 12| \\ge 0 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, \\infty) \\)", "\\( [3, \\infty) \\)", "\\( (3, \\infty) \\)", "No Solution"],
-        correctIndex: 0,
-        exp: "Absolute value is non-negative for all real numbers! Solution is \\((-\\infty, \\infty)\\)."
-      },
-      {
-        q: "Solve for \\(x\\): \\( \\frac{x - 3}{-4} \\ge 2 \\)",
-        tag: "Standard",
-        options: ["\\( x \\le -5 \\)", "\\( x \\ge -5 \\)", "\\( x \\le 11 \\)", "\\( x \\ge -11 \\)"],
-        correctIndex: 0,
-        exp: "Multiply by \\(-4\\) (flip sign!): \\(x - 3 \\le -8 \\rightarrow x \\le -5\\)."
-      },
-
-      // ROW 4
-      {
-        q: "Solve compound AND with linear terms: \\( 3x - 4 \\le 4x + 2 \\le 3x + 5 \\)",
-        tag: "Accelerated",
-        options: ["\\( [-6, 3] \\)", "\\( (-6, 3) \\)", "\\( [-6, 5] \\)", "\\( [-4, 3] \\)"],
-        correctIndex: 0,
-        exp: "1) \\(3x - 4 \\le 4x + 2 \\rightarrow -6 \\le x\\).<br>2) \\(4x + 2 \\le 3x + 5 \\rightarrow x \\le 3\\).<br>Combined: \\([-6, 3]\\)."
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x \\ge 0 \\text{ AND } x > 0 \\)",
-        tag: "Accelerated",
-        options: ["\\( (0, \\infty) \\)", "\\( [0, \\infty) \\)", "\\( (0, 0) \\)", "\\( [0, 0] \\)"],
-        correctIndex: 0,
-        exp: "Since \\(x = 0\\) satisfies \\(x \\ge 0\\) but NOT \\(x > 0\\), the strict inequality \\(x > 0\\) is the intersection: \\((0, \\infty)\\)."
-      },
-      {
-        q: "Express in interval notation: \\( x \\le -2 \\text{ OR } x \\ge 5 \\)",
-        tag: "Standard",
-        options: ["\\( (-\\infty, -2] \\cup [5, \\infty) \\)", "\\( [ -2, 5 ] \\)", "\\( (-\\infty, -2) \\cup (5, \\infty) \\)", "\\( (-2, 5) \\)"],
-        correctIndex: 0,
-        exp: "\\(x \\le -2\\) is \\((-\\infty, -2]\\); \\(x \\ge 5\\) is \\([5, \\infty)\\). Combined with union symbol."
-      },
-      {
-        q: "Solve: \\( 7 - 2(3 - x) \\le 5x + 4 \\)",
-        tag: "Standard",
-        options: ["\\( x \\ge -1 \\)", "\\( x \\le -1 \\)", "\\( x \\ge 1 \\)", "\\( x \\le 1 \\)"],
-        correctIndex: 0,
-        exp: "Expand: \\(7 - 6 + 2x \\le 5x + 4 \\rightarrow 1 + 2x \\le 5x + 4 \\rightarrow -3x \\le 3 \\rightarrow x \\ge -1\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> What is the smallest integer \\(k\\) such that \\( 3x - 7 < 2x + k \\) is satisfied by \\(x = 10\\)?",
-        tag: "AMC Challenge",
-        options: ["4", "3", "5", "10"],
-        correctIndex: 0,
-        exp: "Substitute \\(x = 10\\): \\(3(10) - 7 < 2(10) + k \\rightarrow 23 < 20 + k \\rightarrow k > 3\\).<br>Smallest integer > 3 is 4."
-      },
-      {
-        q: "Solve: \\( -4 < 2x - 6 \\le 8 \\)",
-        tag: "Standard",
-        options: ["\\( (1, 7] \\)", "\\( [1, 7) \\)", "\\( (1, 7) \\)", "\\( [1, 7] \\)"],
-        correctIndex: 0,
-        exp: "Add 6: \\(2 < 2x \\le 14\\). Divide by 2: \\(1 < x \\le 7\\). Interval: \\((1, 7]\\)."
-      },
-      {
-        q: "Given \\(m > 0\\), solve for \\(x\\): \\( -mx + 4 > 10 \\)",
-        tag: "Accelerated",
-        options: ["\\( x < -\\frac{6}{m} \\)", "\\( x > -\\frac{6}{m} \\)", "\\( x < \\frac{6}{m} \\)", "\\( x > \\frac{6}{m} \\)"],
-        correctIndex: 0,
-        exp: "Subtract 4: \\(-mx > 6\\). Divide by \\(-m\\) (negative divisor flips sign!): \\(x < -\\frac{6}{m}\\)."
-      },
-
-      // ROW 5
-      {
-        q: "Solve compound AND with linear terms: \\( 5x - 2 < 3x + 4 \\le 5x + 10 \\)",
-        tag: "Accelerated",
-        options: ["\\( [-3, 3) \\)", "\\( (-3, 3] \\)", "\\( [-3, 3] \\)", "\\( (-3, 3) \\)"],
-        correctIndex: 0,
-        exp: "1) \\(5x - 2 < 3x + 4 \\rightarrow x < 3\\).<br>2) \\(3x + 4 \\le 5x + 10 \\rightarrow x \\ge -3\\).<br>Combined: \\([-3, 3)\\)."
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x \\le 8 \\text{ AND } x < 8 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, 8) \\)", "\\( (-\\infty, 8] \\)", "\\( [8, 8] \\)", "\\( (8, \\infty) \\)"],
-        correctIndex: 0,
-        exp: "The strict inequality \\(x < 8\\) excludes 8, so it is the overlapping intersection: \\((-\\infty, 8)\\)."
-      },
-      {
-        q: "Solve: \\( |2x + 6| = 0 \\)",
-        tag: "Standard",
-        options: ["\\( x = -3 \\)", "\\( x = 3 \\)", "\\( x = \\pm 3 \\)", "No Solution"],
-        correctIndex: 0,
-        exp: "The expression inside must equal 0: \\(2x + 6 = 0 \\rightarrow 2x = -6 \\rightarrow x = -3\\)."
-      },
-      {
-        q: "Solve: \\( 3(x + 1) - 5x > 9 \\)",
-        tag: "Standard",
-        options: ["\\( x < -3 \\)", "\\( x > -3 \\)", "\\( x < 3 \\)", "\\( x > 3 \\)"],
-        correctIndex: 0,
-        exp: "Expand: \\(3x + 3 - 5x > 9 \\rightarrow -2x + 3 > 9 \\rightarrow -2x > 6 \\rightarrow x < -3\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> How many non-negative integers \\(x\\) satisfy \\( 2x - 3 < 7 \\)?",
-        tag: "AMC Challenge",
-        options: ["5", "4", "6", "3"],
-        correctIndex: 0,
-        exp: "\\(2x < 10 \\rightarrow x < 5\\).<br>Non-negative integers (\\(x \\ge 0\\)): 0, 1, 2, 3, 4. Total = 5 integers!"
-      },
-      {
-        q: "Solve compound OR: \\( x - 2 < -5 \\text{ OR } x + 3 > 7 \\)",
-        tag: "Standard",
-        options: ["\\( (-\\infty, -3) \\cup (4, \\infty) \\)", "\\( (-3, 4) \\)", "\\( [-3, 4] \\)", "\\( (-\\infty, 4) \\)"],
-        correctIndex: 0,
-        exp: "1) \\(x < -3\\). 2) \\(x > 4\\). Solution set is \\((-\\infty, -3) \\cup (4, \\infty)\\)."
-      },
-      {
-        q: "Convert interval \\( (2, 12) \\) to absolute value inequality format.",
-        tag: "Accelerated",
-        options: ["\\( |x - 7| < 5 \\)", "\\( |x + 7| < 5 \\)", "\\( |x - 5| < 7 \\)", "\\( |x - 7| \\le 5 \\)"],
-        correctIndex: 0,
-        exp: "Midpoint \\(h = \\frac{2 + 12}{2} = 7\\). Half-width \\(k = \\frac{12 - 2}{2} = 5\\). Strictly open interval: \\(|x - 7| < 5\\)."
-      },
-
-      // ROW 6
-      {
-        q: "Solve compound AND with linear terms: \\( x + 2 < 2x - 1 < x + 7 \\)",
-        tag: "Accelerated",
-        options: ["\\( (3, 8) \\)", "\\( [3, 8] \\)", "\\( (3, 7) \\)", "\\( (2, 8) \\)"],
-        correctIndex: 0,
-        exp: "1) \\(x + 2 < 2x - 1 \\rightarrow 3 < x\\).<br>2) \\(2x - 1 < x + 7 \\rightarrow x < 8\\).<br>Combined: \\(3 < x < 8\\) or \\((3, 8)\\)."
-      },
-      {
-        q: "Solve: \\( |x - 4| \\ge 6 \\)",
-        tag: "Standard",
-        options: ["\\( (-\\infty, -2] \\cup [10, \\infty) \\)", "\\( [-2, 10] \\)", "\\( (-2, 10) \\)", "\\( [10, \\infty) \\)"],
-        correctIndex: 0,
-        exp: "\\(x - 4 \\ge 6 \\rightarrow x \\ge 10\\) OR \\(x - 4 \\le -6 \\rightarrow x \\le -2\\)."
-      },
-      {
-        q: "Solve for \\(x\\): \\( \\frac{2}{3}x - 4 > 2 \\)",
-        tag: "Standard",
-        options: ["\\( x > 9 \\)", "\\( x < 9 \\)", "\\( x > 4 \\)", "\\( x < 4 \\)"],
-        correctIndex: 0,
-        exp: "Add 4: \\(\\frac{2}{3}x > 6\\). Multiply by \\(\\frac{3}{2}\\): \\(x > 9\\)."
-      },
-      {
-        q: "Express in interval notation: \\( x < 0 \\text{ OR } x > 0 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, 0) \\cup (0, \\infty) \\)", "\\( (-\\infty, \\infty) \\)", "\\( \\emptyset \\)", "\\( [0, \\infty) \\)"],
-        correctIndex: 0,
-        exp: "This represents all real numbers except zero: \\((-\\infty, 0) \\cup (0, \\infty)\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> If \\( -3 \\le x \\le 5 \\) and \\( 2 \\le y \\le 6 \\), what is the minimum value of \\( x - y \\)?",
-        tag: "AMC Challenge",
-        options: ["-9", "-5", "-8", "-11"],
-        correctIndex: 0,
-        exp: "To minimize \\(x - y\\), choose minimum \\(x\\) (\\(-3\\)) and subtract maximum \\(y\\) (\\(6\\)): \\(-3 - 6 = -9\\)."
-      },
-      {
-        q: "Solve: \\( -15 \\le -3x < 9 \\)",
-        tag: "Standard",
-        options: ["\\( (-3, 5] \\)", "\\( [-3, 5) \\)", "\\( [-5, 3) \\)", "\\( (-5, 3] \\)"],
-        correctIndex: 0,
-        exp: "Divide by \\(-3\\) (flip all signs!): \\(5 \\ge x > -3\\), which means \\(-3 < x \\le 5\\) or \\((-3, 5]\\)."
-      },
-      {
-        q: "Solve for \\(x\\): \\( 4x - 7 \\le 2(2x - 3) \\)",
-        tag: "Accelerated",
-        options: ["\\( (-\\infty, \\infty) \\)", "No Solution", "\\( x \\le 0 \\)", "\\( x \\ge 1 \\)"],
-        correctIndex: 0,
-        exp: "Expand: \\(4x - 7 \\le 4x - 6 \\rightarrow -7 \\le -6\\). This statement is always true! Thus, All Real Numbers."
-      },
-
-      // ROW 7
-      {
-        q: "Solve compound AND with linear terms: \\( 2x - 5 \\le x + 1 \\le 2x - 1 \\)",
-        tag: "Accelerated",
-        options: ["\\( [2, 6] \\)", "\\( (2, 6) \\)", "\\( [1, 6] \\)", "\\( [2, 5] \\)"],
-        correctIndex: 0,
-        exp: "1) \\(2x - 5 \\le x + 1 \\rightarrow x \\le 6\\).<br>2) \\(x + 1 \\le 2x - 1 \\rightarrow 2 \\le x\\).<br>Combined: \\(2 \\le x \\le 6\\) or \\([2, 6]\\)."
-      },
-      {
-        q: "Solve: \\( |3x + 9| \\le 0 \\)",
-        tag: "Accelerated",
-        options: ["\\( x = -3 \\)", "No Solution", "\\( x \\le -3 \\)", "\\( (-\\infty, -3] \\)"],
-        correctIndex: 0,
-        exp: "Absolute value cannot be negative, so it can only EQUAL 0: \\(3x + 9 = 0 \\rightarrow x = -3\\)."
-      },
-      {
-        q: "Express in interval notation: \\( x \\ge 7 \\)",
-        tag: "Standard",
-        options: ["\\( [7, \\infty) \\)", "\\( (7, \\infty) \\)", "\\( (-\\infty, 7] \\)", "\\( [7, 7] \\)"],
-        correctIndex: 0,
-        exp: "Greater than or equal to 7 starts at 7 (included) and goes to positive infinity: \\([7, \\infty)\\)."
-      },
-      {
-        q: "Simplify and express in interval notation: \\( x > -1 \\text{ AND } x \\ge -1 \\)",
-        tag: "Accelerated",
-        options: ["\\( (-1, \\infty) \\)", "\\( [-1, \\infty) \\)", "\\( (-1, 1) \\)", "\\( [-1, 1] \\)"],
-        correctIndex: 0,
-        exp: "The strict condition \\(x > -1\\) excludes \\(-1\\), so the overlapping solution is \\((-1, \\infty)\\)."
-      },
-      {
-        q: "<b>[AMC Challenge]</b> If \\( |x - 2| < 3 \\), what is the maximum possible value of \\( 4 - 2x \\)?",
-        tag: "AMC Challenge",
-        options: ["6", "10", "4", "2"],
-        correctIndex: 0,
-        exp: "\\(|x - 2| < 3 \\rightarrow -1 < x < 5\\).<br>To maximize \\(4 - 2x\\), pick the smallest value of \\(x\\) (approaching \\(-1\\)): \\(4 - 2(-1) = 6\\)."
-      },
-      {
-        q: "Solve: \\( -1 \\le \\frac{2x + 3}{5} < 3 \\)",
-        tag: "Standard",
-        options: ["\\( [-4, 6) \\)", "\\( (-4, 6] \\)", "\\( [-4, 6] \\)", "\\( (-4, 6) \\)"],
-        correctIndex: 0,
-        exp: "Multiply by 5: \\(-5 \\le 2x + 3 < 15\\). Subtract 3: \\(-8 \\le 2x < 12\\). Divide by 2: \\(-4 \\le x < 6\\)."
-      },
-      {
-        q: "Solve for \\(x\\): \\( 3x + 8 < 3(x - 1) \\)",
-        tag: "Standard",
-        options: ["No Solution (\\(\\emptyset\\))", "\\( (-\\infty, \\infty) \\)", "\\( x < -1 \\)", "\\( x > 8 \\)"],
-        correctIndex: 0,
-        exp: "Expand: \\(3x + 8 < 3x - 3 \\rightarrow 8 < -3\\). This is impossible! Hence, No Solution."
-      }
-    ];
-
-    function initGame() {
-      createBoardUI();
-      placeShipsRandomly();
-    }
-
-    function createBoardUI() {
-      const boardElement = document.getElementById('board');
-      boardElement.innerHTML = '';
-
-      boardElement.appendChild(createCell('', 'header-cell'));
-      for (let c = 0; c < BOARD_SIZE; c++) {
-        boardElement.appendChild(createCell(String.fromCharCode(65 + c), 'header-cell'));
+      const diff = document.getElementById('difficulty').value;
+      const sonarBtn = document.getElementById('sonarBtn');
+      if (diff === 'basic') {
+        sonarBtn.disabled = true;
+        sonarBtn.title = 'Sonar is disabled in Basic Mode';
+      } else {
+        sonarBtn.disabled = false;
+        sonarBtn.title = '';
       }
 
-      for (let r = 0; r < BOARD_SIZE; r++) {
-        boardElement.appendChild(createCell(r + 1, 'header-cell'));
-        for (let c = 0; c < BOARD_SIZE; c++) {
-          const cell = createCell('', 'grid-cell');
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-          cell.addEventListener('click', handleCellClick);
-          boardElement.appendChild(cell);
-        }
-      }
+      generateShips();
+      renderGrid();
+      addLog('New fleet deployed. Select coordinates to launch torpedo.');
     }
 
-    function createCell(text, className) {
-      const div = document.createElement('div');
-      div.className = `cell ${className}`;
-      div.textContent = text;
-      return div;
-    }
-
-    function placeShipsRandomly() {
-      ships.forEach(ship => {
+    function generateShips() {
+      board = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(false));
+      const shipLengths = [3, 2];
+      shipLengths.forEach(len => {
         let placed = false;
         while (!placed) {
-          const dir = Math.random() < 0.5 ? 'H' : 'V';
-          const row = Math.floor(Math.random() * (dir === 'V' ? BOARD_SIZE - ship.size + 1 : BOARD_SIZE));
-          const col = Math.floor(Math.random() * (dir === 'H' ? BOARD_SIZE - ship.size + 1 : BOARD_SIZE));
+          let horiz = Math.random() < 0.5;
+          let r = Math.floor(Math.random() * (horiz ? GRID_SIZE : GRID_SIZE - len + 1));
+          let c = Math.floor(Math.random() * (horiz ? GRID_SIZE - len + 1 : GRID_SIZE));
 
           let overlap = false;
-          for (let i = 0; i < ship.size; i++) {
-            const r = dir === 'V' ? row + i : row;
-            const c = dir === 'H' ? col + i : col;
-            if (grid[r][c] === 1) overlap = true;
+          for (let i = 0; i < len; i++) {
+            if (board[horiz ? r : r + i][horiz ? c + i : c]) overlap = true;
           }
 
           if (!overlap) {
-            for (let i = 0; i < ship.size; i++) {
-              const r = dir === 'V' ? row + i : row;
-              const c = dir === 'H' ? col + i : col;
-              grid[r][c] = 1;
+            for (let i = 0; i < len; i++) {
+              board[horiz ? r : r + i][horiz ? c + i : c] = true;
             }
             placed = true;
           }
@@ -755,114 +360,270 @@
       });
     }
 
-    function handleCellClick(e) {
-      const cell = e.target;
-      const r = parseInt(cell.dataset.row);
-      const c = parseInt(cell.dataset.col);
+    function renderGrid() {
+      const gridEl = document.getElementById('grid');
+      gridEl.innerHTML = '';
 
-      if (cell.classList.contains('hit') || cell.classList.contains('miss')) return;
+      const emptyHeader = document.createElement('div');
+      emptyHeader.className = 'cell header';
+      gridEl.appendChild(emptyHeader);
 
-      pendingTarget = { row: r, col: c, element: cell };
-      
-      const coordName = String.fromCharCode(65 + c) + (r + 1);
-      showQuestion(r, c, coordName);
-    }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+      for (let c = 1; c <= GRID_SIZE; c++) {
+        const header = document.createElement('div');
+        header.className = 'cell header';
+        header.innerText = c;
+        gridEl.appendChild(header);
       }
-      return array;
-    }
 
-    function showQuestion(r, c, coordName) {
-      document.getElementById('instruction-prompt').classList.add('hidden');
-      document.getElementById('feedback').className = 'feedback'; 
-      const qCard = document.getElementById('question-card');
-      qCard.classList.remove('hidden');
+      for (let r = 0; r < GRID_SIZE; r++) {
+        const rowHeader = document.createElement('div');
+        rowHeader.className = 'cell header';
+        rowHeader.innerText = rows[r];
+        gridEl.appendChild(rowHeader);
 
-      const problemIndex = (r * BOARD_SIZE) + c;
-      const rawProblem = problems[problemIndex];
-
-      let optionObjects = rawProblem.options.map((opt, index) => {
-        return { text: opt, isCorrect: index === rawProblem.correctIndex };
-      });
-
-      optionObjects = shuffleArray(optionObjects);
-
-      const badgeClass = rawProblem.tag === "AMC Challenge" ? "badge-amc" : "badge-std";
-      document.getElementById('target-coord').innerHTML = 
-        `Target: ${coordName} <span class="badge ${badgeClass}">${rawProblem.tag}</span>`;
-      document.getElementById('question-text').innerHTML = rawProblem.q;
-
-      const optionsContainer = document.getElementById('options');
-      optionsContainer.innerHTML = '';
-
-      optionObjects.forEach((optObj) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-option';
-        btn.innerHTML = optObj.text;
-        btn.onclick = () => evaluateAnswer(optObj.isCorrect, rawProblem.exp);
-        optionsContainer.appendChild(btn);
-      });
-
-      if (window.MathJax) {
-        MathJax.typesetPromise();
-      }
-    }
-
-    function evaluateAnswer(isCorrect, explanation) {
-      totalShots++;
-      const feedbackEl = document.getElementById('feedback');
-      const r = pendingTarget.row;
-      const c = pendingTarget.col;
-      const cell = pendingTarget.element;
-
-      if (isCorrect) {
-        if (grid[r][c] === 1) {
-          grid[r][c] = 2; 
-          cell.classList.add('hit');
-          cell.textContent = '💥';
-          successfulHits++;
-          feedbackEl.className = 'feedback correct';
-          feedbackEl.innerHTML = `🎯 DIRECT HIT!<br><small>${explanation}</small>`;
-        } else {
-          grid[r][c] = -1; 
-          cell.classList.add('miss');
-          cell.textContent = '🌊';
-          feedbackEl.className = 'feedback correct';
-          feedbackEl.innerHTML = `Target calculated correctly, but water was hit! (MISS)<br><small>${explanation}</small>`;
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.id = `cell-${r}-${c}`;
+          cell.innerText = `${rows[r]}${c + 1}`;
+          cell.onclick = () => handleCellClick(r, c);
+          gridEl.appendChild(cell);
         }
+      }
+    }
+
+    function handleCellClick(r, c) {
+      const cellEl = document.getElementById(`cell-${r}-${c}`);
+      if (cellEl.classList.contains('hit') || cellEl.classList.contains('miss')) return;
+
+      activeCell = { r, c, question: generateProblem() };
+
+      document.getElementById('modalTitle').innerText = `Target Cell ${rows[r]}${c + 1}`;
+      document.getElementById('problemText').innerText = activeCell.question.text;
+      document.getElementById('answerInput').value = '';
+      document.getElementById('modalFeedback').innerText = '';
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    // Helper: Greatest Common Divisor
+    function gcd(a, b) {
+      return b === 0 ? a : gcd(b, a % b);
+    }
+
+    // Helper: Least Common Multiple
+    function lcm(a, b) {
+      return (a * b) / gcd(a, b);
+    }
+
+    // --- ALGORITHMIC PROBLEM GENERATORS (1000+ Combinations) ---
+    function generateProblem() {
+      const diff = document.getElementById('difficulty').value;
+
+      if (diff === 'basic') {
+        // Larson / Big Ideas Math Engine
+        const type = Math.floor(Math.random() * 3);
+        if (type === 0) {
+          const num = Math.floor(Math.random() * 899) + 100;
+          const div = [2, 3, 4, 5, 6, 9, 10][Math.floor(Math.random() * 7)];
+          const isDiv = num % div === 0;
+          return {
+            text: `Is the number ${num} divisible by ${div}? (Enter 1 for Yes, 0 for No)`,
+            ans: isDiv ? 1 : 0,
+            hint: `Apply the divisibility test for ${div}.`
+          };
+        } else if (type === 1) {
+          // Composite packaging test (12, 15, 18, 36, 45)
+          const composites = [12, 15, 18, 36, 45];
+          const comp = composites[Math.floor(Math.random() * composites.length)];
+          const mult = Math.floor(Math.random() * 20) + 5;
+          const target = mult * comp + (Math.random() < 0.5 ? 0 : 3);
+          const isDiv = target % comp === 0;
+          return {
+            text: `A warehouse needs to pack ${target} items into equal boxes of size ${comp}. Can they do this without leftovers? (Enter 1 for Yes, 0 for No)`,
+            ans: isDiv ? 1 : 0,
+            hint: `Break ${comp} into its coprime factors to verify.`
+          };
+        } else {
+          // LCM periodic scheduling
+          const p1 = [4, 6, 8, 10, 12][Math.floor(Math.random() * 5)];
+          const p2 = [5, 9, 15][Math.floor(Math.random() * 3)];
+          const ans = lcm(p1, p2);
+          return {
+            text: `Two lighthouse beacons flash periodically. One flashes every ${p1} seconds, the other every ${p2} seconds. If they flash together now, how many seconds until they flash together again?`,
+            ans: ans,
+            hint: `Find the Least Common Multiple (LCM) of ${p1} and ${p2}.`
+          };
+        }
+
+      } else if (diff === 'advanced') {
+        // AoPS Prealgebra Engine
+        const type = Math.floor(Math.random() * 3);
+        if (type === 0) {
+          // Unknown digit puzzle (Rule of 9)
+          const d1 = Math.floor(Math.random() * 8) + 1;
+          const d2 = Math.floor(Math.random() * 8) + 1;
+          const d3 = Math.floor(Math.random() * 8) + 1;
+          const sum = d1 + d2 + d3;
+          let targetX = (9 - (sum % 9)) % 9;
+          return {
+            text: `Find the digit X such that the 4-digit number ${d1}${d2}X${d3} is divisible by 9.`,
+            ans: targetX,
+            hint: `The sum of the digits (${d1} + ${d2} + X + ${d3}) must be a multiple of 9.`
+          };
+        } else if (type === 1) {
+          // Range counting divisible by coprime factors
+          const a = [3, 4, 5][Math.floor(Math.random() * 3)];
+          const b = [7, 8, 9][Math.floor(Math.random() * 3)];
+          const L = lcm(a, b);
+          // Count 3-digit multiples of L (100 to 999)
+          const minM = Math.ceil(100 / L);
+          const maxM = Math.floor(999 / L);
+          const ans = maxM - minM + 1;
+          return {
+            text: `How many positive 3-digit integers are divisible by both ${a} and ${b}?`,
+            ans: ans,
+            hint: `Count the multiples of LCM(${a}, ${b}) = ${L} between 100 and 999.`
+          };
+        } else {
+          // Prime factorization rule (Rule of 11)
+          const a = Math.floor(Math.random() * 8) + 1;
+          const b = Math.floor(Math.random() * 8) + 1;
+          // Number form: a b X b -> alternating sum: (a + X) - (b + b) = 0 mod 11
+          let targetX = (2 * b - a) % 11;
+          if (targetX < 0) targetX += 11;
+          if (targetX > 9) targetX = targetX - 11;
+          if (targetX < 0) targetX += 11;
+          return {
+            text: `Find the single digit X that makes the 4-digit number ${a}${b}X${b} divisible by 11.`,
+            ans: targetX,
+            hint: `The alternating digit sum (a - b + X - b) must be a multiple of 11.`
+          };
+        }
+
       } else {
-        feedbackEl.className = 'feedback incorrect';
-        feedbackEl.innerHTML = `⚠️ MISFIRE! Calculation incorrect.<br><b>Explanation:</b> ${explanation}`;
-      }
-
-      updateStats();
-      document.getElementById('question-card').classList.add('hidden');
-      document.getElementById('instruction-prompt').classList.remove('hidden');
-
-      if (window.MathJax) {
-        MathJax.typesetPromise();
+        // Master AMC 8 Engine
+        const type = Math.floor(Math.random() * 4);
+        if (type === 0) {
+          // Modular exponent base 2 mod 5
+          const exp = Math.floor(Math.random() * 80) + 20;
+          const k = Math.floor(Math.random() * 4) + 1;
+          const powCycle = [6, 2, 4, 8]; // 2^1=2, 2^2=4, 2^3=8, 2^4=6 mod 10
+          const lastDigit = powCycle[exp % 4];
+          const ans = (lastDigit + k) % 5;
+          return {
+            text: `What is the remainder when (2^${exp} + ${k}) is divided by 5?`,
+            ans: ans,
+            hint: `Use the repeating units-digit pattern of powers of 2 (2, 4, 8, 6).`
+          };
+        } else if (type === 1) {
+          // Set Difference: Divisible by A but NOT by B
+          const divA = 6;
+          const divB = [8, 9, 15][Math.floor(Math.random() * 3)];
+          const common = lcm(divA, divB);
+          const maxVal = Math.floor(Math.random() * 50) + 100; // e.g. 100 to 150
+          const multA = Math.floor(maxVal / divA);
+          const multAB = Math.floor(maxVal / common);
+          const ans = multA - multAB;
+          return {
+            text: `How many positive integers less than or equal to ${maxVal} are divisible by ${divA} but NOT by ${divB}?`,
+            ans: ans,
+            hint: `Subtract the multiples of LCM(${divA}, ${divB}) = ${common} from multiples of ${divA}.`
+          };
+        } else if (type === 2) {
+          // LCM Digit Sum
+          const n1 = [12, 14, 15, 18][Math.floor(Math.random() * 4)];
+          const n2 = [20, 24, 30][Math.floor(Math.random() * 3)];
+          const val = lcm(n1, n2);
+          const ans = String(val).split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+          return {
+            text: `Find the sum of the digits of the Least Common Multiple (LCM) of ${n1} and ${n2}.`,
+            ans: ans,
+            hint: `Calculate LCM(${n1}, ${n2}) first, then sum its digits.`
+          };
+        } else {
+          // Base-N Divisibility or Coprime Product 36/45
+          const comp = [36, 45][Math.floor(Math.random() * 2)];
+          const mult = Math.floor(Math.random() * 15) + 5;
+          const product = mult * comp;
+          const str = String(product);
+          const hiddenIdx = Math.floor(Math.random() * (str.length - 1)) + 1; // don't hide last digit
+          const ansDigit = parseInt(str[hiddenIdx], 10);
+          const displayStr = str.substring(0, hiddenIdx) + 'X' + str.substring(hiddenIdx + 1);
+          return {
+            text: `The number ${displayStr} is divisible by ${comp}. Find the value of digit X.`,
+            ans: ansDigit,
+            hint: `A number divisible by ${comp} must be divisible by both ${comp === 36 ? '4 and 9' : '5 and 9'}.`
+          };
+        }
       }
     }
 
-    function updateStats() {
-      const accuracy = totalShots > 0 ? Math.round((successfulHits / totalShots) * 100) : 100;
-      document.getElementById('accuracy').textContent = `${accuracy}%`;
-      document.getElementById('hits-count').textContent = successfulHits;
+    function submitAnswer() {
+      const userAns = parseInt(document.getElementById('answerInput').value.trim(), 10);
+      const feedback = document.getElementById('modalFeedback');
 
-      if (successfulHits === 8) {
-        document.getElementById('instruction-prompt').innerHTML = `
-          <h2 style="color: #15803d; margin: 0;">🏆 VICTORY!</h2>
-          <p>You destroyed all enemy ships with ${accuracy}% calculation accuracy!</p>
-          <button class="btn-option" style="text-align: center; width: 100%;" onclick="location.reload()">Play Again</button>
-        `;
+      if (isNaN(userAns)) {
+        feedback.innerText = 'Please enter a valid integer.';
+        feedback.className = 'feedback error';
+        return;
+      }
+
+      if (userAns === activeCell.question.ans) {
+        document.getElementById('modalOverlay').classList.remove('active');
+        executeStrike(activeCell.r, activeCell.c);
+      } else {
+        feedback.innerText = `Incorrect! Hint: ${activeCell.question.hint}`;
+        feedback.className = 'feedback error';
+        addLog(`Misfire on ${rows[activeCell.r]}${activeCell.c + 1}! Incorrect solution.`, 'miss');
       }
     }
 
-    initGame();
+    function executeStrike(r, c) {
+      const cellEl = document.getElementById(`cell-${r}-${c}`);
+      const isHit = board[r][c];
+
+      if (isHit) {
+        cellEl.classList.add('hit');
+        cellEl.innerText = '💥';
+        hits++;
+        document.getElementById('hitCount').innerText = hits;
+        addLog(`DIRECT HIT on ${rows[r]}${c + 1}!`, 'hit');
+      } else {
+        cellEl.classList.add('miss');
+        cellEl.innerText = '🌊';
+        misses++;
+        document.getElementById('missCount').innerText = misses;
+        addLog(`Splash! Miss at ${rows[r]}${c + 1}.`, 'miss');
+      }
+    }
+
+    function useSonar() {
+      if (sonarLeft <= 0) return;
+
+      const r = Math.floor(Math.random() * GRID_SIZE);
+      let shipInRow = 0;
+      for (let c = 0; c < GRID_SIZE; c++) {
+        if (board[r][c]) shipInRow++;
+      }
+
+      sonarLeft--;
+      document.getElementById('sonarCount').innerText = sonarLeft;
+      addLog(`SONAR SCAN: Row ${rows[r]} contains ${shipInRow} ship cell(s).`);
+
+      if (sonarLeft === 0) {
+        document.getElementById('sonarBtn').disabled = true;
+      }
+    }
+
+    function addLog(msg, type = '') {
+      const logBox = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.innerText = msg;
+      logBox.prepend(entry);
+    }
+
+    window.onload = resetGame;
   </script>
 </body>
 </html>
